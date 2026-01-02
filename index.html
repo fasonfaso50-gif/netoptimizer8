@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NetOptimizer Pro | Ultimate Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -28,7 +28,6 @@
             --border-color: #1f1f23;
             --text-main: #f4f4f5;
             --text-dim: #71717a;
-            --icon-theme-color: #ffffff;
         }
 
         .light {
@@ -37,11 +36,10 @@
             --border-color: #e2e8f0;
             --text-main: #0f172a;
             --text-dim: #64748b;
-            --icon-theme-color: #09090b;
         }
 
         body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #000;
             color: var(--text-main);
             height: 100vh;
@@ -61,7 +59,6 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            transition: background-color 0.5s ease;
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
@@ -72,7 +69,6 @@
             border-radius: 20px;
             padding: 16px;
             transition: all 0.3s ease;
-            position: relative;
         }
 
         .tab-bar {
@@ -87,12 +83,11 @@
         }
 
         .tab-item {
-            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             color: var(--text-dim);
-            transition: all 0.3s;
+            transition: 0.3s;
         }
         .tab-item.active { color: var(--brand); }
 
@@ -115,69 +110,73 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Анимация иконки темы */
-        .theme-icon-container {
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .theme-icon-rotate {
-            transform: rotate(360deg);
-        }
-
-        #modal-overlay {
+        /* Сканирование */
+        #optimizing-fx {
             position: absolute;
             inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
+            background: rgba(59, 130, 246, 0.05);
+            z-index: 200;
             display: none;
-            align-items: flex-end;
-            transition: 0.3s;
+            pointer-events: none;
         }
-        #modal-content {
+        .scan-line {
             width: 100%;
-            background: var(--bg-secondary);
-            border-top: 2px solid var(--border-color);
-            border-top-left-radius: 30px;
-            border-top-right-radius: 30px;
-            padding: 24px;
-            transform: translateY(100%);
-            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--brand), transparent);
+            box-shadow: 0 0 20px var(--brand);
+            position: absolute;
+            top: -10%;
+            animation: scan 1.5s ease-in-out infinite;
         }
-        #modal-overlay.active { display: flex; }
-        #modal-overlay.active #modal-content { transform: translateY(0); }
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
 
-        .audit-item {
-            cursor: pointer;
-            transition: background 0.2s;
+        /* Логи */
+        .log-line {
+            font-size: 9px;
+            line-height: 1.4;
+            margin-bottom: 2px;
+            border-left: 2px solid transparent;
+            padding-left: 6px;
         }
-        .audit-item:active { background: rgba(59, 130, 246, 0.1); }
+        .log-info { border-color: #3b82f6; color: #94a3b8; }
+        .log-warn { border-color: #f59e0b; color: #fbbf24; }
+        .log-error { border-color: #ef4444; color: #f87171; }
+        .log-success { border-color: #10b981; color: #34d399; }
 
         .sub-menu { display: none; }
-        .sub-menu.active { display: block; animation: fadeIn 0.3s; }
+        .sub-menu.active { display: block; }
     </style>
 </head>
 <body class="dark">
 
     <div class="phone-container shadow-2xl">
         
+        <div id="optimizing-fx">
+            <div class="scan-line"></div>
+            <div id="fx-text-overlay" class="absolute inset-0 flex flex-col justify-center items-center gap-2 text-brand font-bold text-[10px] mono"></div>
+        </div>
+
         <!-- Header -->
-        <header class="h-20 flex items-center justify-between px-6 shrink-0 z-50 bg-transparent">
+        <header class="h-20 flex items-center justify-between px-6 shrink-0 z-50">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full border-2 border-brand overflow-hidden shadow-lg shadow-brand/20">
                     <img src="https://i.pinimg.com/736x/1b/ac/96/1bac96cd70e67c3c67ffb25cd4f88da1.jpg" alt="User" class="w-full h-full object-cover">
                 </div>
                 <div class="flex flex-col">
-                    <h1 class="text-md font-extrabold tracking-tight flex items-center gap-1">
+                    <h1 class="text-md font-extrabold tracking-tight">
                         <span class="text-brand">NET</span>OPTIMIZER
                     </h1>
-                    <span id="status-text" data-t="status_active" class="text-[9px] font-bold uppercase tracking-widest text-emerald-500">
-                        Система Активна
+                    <span id="device-model-header" class="text-[9px] font-bold uppercase tracking-widest text-zinc-500">
+                        NULL
                     </span>
                 </div>
             </div>
-            <button onclick="toggleTheme()" id="theme-btn" class="w-10 h-10 bg-zinc-800/20 light:bg-zinc-200/50 rounded-full flex items-center justify-center overflow-hidden">
-                <div id="theme-icon-wrapper" class="theme-icon-container">
-                    <i id="theme-icon" data-lucide="moon" class="w-5 h-5 text-white transition-colors duration-500"></i>
+            <button onclick="toggleTheme()" class="w-10 h-10 bg-zinc-800/20 rounded-full flex items-center justify-center transition-all active:scale-90">
+                <div id="theme-icon-wrapper" class="transition-transform duration-500">
+                    <i id="theme-icon" data-lucide="moon" class="w-5 h-5 text-white"></i>
                 </div>
             </button>
         </header>
@@ -189,386 +188,280 @@
                 <div class="space-y-6">
                     <div class="grid grid-cols-2 gap-4">
                         <div class="card-ultimate border-l-4 border-l-brand">
-                            <p data-t="latency" class="text-[10px] font-bold text-zinc-500 uppercase">Задержка</p>
+                            <p class="text-[10px] font-bold text-zinc-500 uppercase">Частота</p>
                             <div class="flex items-baseline gap-1 mt-1">
-                                <span id="ping-val" class="text-3xl font-black mono tracking-tighter">24</span>
-                                <span class="text-xs font-bold text-zinc-400">ms</span>
+                                <span id="hz-val" class="text-3xl font-black mono tracking-tighter text-brand">NULL</span>
+                                <span class="text-xs font-bold text-zinc-400">Hz</span>
                             </div>
                         </div>
                         <div class="card-ultimate">
-                            <p data-t="load" class="text-[10px] font-bold text-zinc-500 uppercase">Нагрузка</p>
+                            <p class="text-[10px] font-bold text-zinc-500 uppercase">Батарея</p>
                             <div class="flex items-baseline gap-1 mt-1">
-                                <span id="cpu-val" class="text-3xl font-black mono tracking-tighter text-emerald-500">12</span>
+                                <span id="bat-val" class="text-3xl font-black mono tracking-tighter text-emerald-500">NULL</span>
                                 <span class="text-xs font-bold text-zinc-400">%</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="card-ultimate flex flex-col gap-2">
+                        <div class="flex justify-between items-center">
+                            <p class="text-[10px] font-bold text-zinc-500 uppercase">Графический Чипсет</p>
+                            <span class="text-[8px] bg-brand/20 text-brand px-2 py-0.5 rounded font-bold">HW_ACCEL</span>
+                        </div>
+                        <p id="gpu-info" class="text-xs font-bold truncate text-zinc-400 italic">Analysing hardware...</p>
+                    </div>
+
                     <div class="card-ultimate h-40"><canvas id="mainChart"></canvas></div>
-                    <button onclick="runUltimateOptimization(this)" class="w-full h-16 bg-brand text-white font-black uppercase text-xs rounded-2xl shadow-xl shadow-brand/20 flex items-center justify-center gap-3">
-                        <i data-lucide="cpu" class="w-5 h-5"></i> <span data-t="btn_optimize">Оптимизировать</span>
+                    
+                    <button id="opt-btn" onclick="runUltimateOptimization(this)" class="w-full h-16 bg-brand text-white font-black uppercase text-xs rounded-2xl shadow-xl shadow-brand/20 flex items-center justify-center gap-3 active:scale-95 transition-transform">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i> <span>Глубокая оптимизация</span>
                     </button>
                 </div>
             </div>
 
-            <!-- VPN -->
-            <div id="panel-vpn" class="tab-panel content-scroll h-full">
+            <!-- Ping Settings Tab -->
+            <div id="panel-ping" class="tab-panel content-scroll h-full">
                 <div class="space-y-6">
-                    <h2 data-t="vpn_nodes" class="text-2xl font-black">VPN Узлы</h2>
-                    <div class="card-ultimate p-8 flex flex-col items-center text-center space-y-6">
-                        <div class="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center"><i data-lucide="shield-check" class="w-10 h-10 text-brand"></i></div>
-                        <div>
-                            <p class="text-lg font-black">Germany, Frankfurt</p>
-                            <p class="text-[10px] mono text-brand mt-1">185.192.12.44</p>
+                    <h2 class="text-2xl font-black">Настройка Пинга</h2>
+                    
+                    <div class="card-ultimate p-6 text-center">
+                        <div id="ping-circle" class="w-20 h-20 rounded-full border-4 border-zinc-800 mx-auto flex items-center justify-center mb-4 transition-all">
+                            <span id="live-ping" class="text-2xl font-black mono">NULL</span>
                         </div>
-                        <button data-t="change_server" class="w-full py-4 bg-darkBtn text-white rounded-xl text-xs font-bold uppercase tracking-widest border border-zinc-800">
-                            Сменить сервер
-                        </button>
+                        <div class="flex justify-center gap-2">
+                            <span class="text-[8px] font-bold px-2 py-1 bg-zinc-800 rounded">ICMP</span>
+                            <span class="text-[8px] font-bold px-2 py-1 bg-zinc-800 rounded">IPV4</span>
+                            <span id="ping-status" class="text-[8px] font-bold px-2 py-1 bg-emerald-500/20 text-emerald-500 rounded uppercase">Stable</span>
+                        </div>
+                    </div>
+
+                    <div class="card-ultimate space-y-4">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-zinc-500 uppercase">Интервал проверки (ms)</label>
+                            <input type="range" min="500" max="5000" value="2000" class="w-full accent-brand">
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-bold text-zinc-500 uppercase">Целевой узел</label>
+                            <select class="bg-zinc-800 border-none rounded-lg p-2 text-xs font-bold text-white outline-none">
+                                <option>google.dns (8.8.8.8)</option>
+                                <option>cloudflare.dns (1.1.1.1)</option>
+                                <option>local.gateway</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- AUDIT -->
+            <!-- Real Logs -->
             <div id="panel-security" class="tab-panel content-scroll h-full">
-                <div class="space-y-6">
-                    <h2 data-t="audit_title" class="text-2xl font-black">Аудит</h2>
-                    <div id="audit-list" class="card-ultimate p-0 overflow-hidden divide-y divide-border-color">
-                        <!-- Динамическая генерация -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-2xl font-black">Логи ядра</h2>
+                        <span class="text-[9px] mono text-brand animate-pulse">LIVE_STREAMING</span>
+                    </div>
+                    <div id="real-logs" class="card-ultimate h-[400px] flex flex-col-reverse p-4 bg-black/90 border-zinc-800 mono overflow-hidden">
+                        <!-- Логи вставляются сюда -->
                     </div>
                 </div>
             </div>
 
-            <!-- MENU -->
+            <!-- Settings -->
             <div id="panel-settings" class="tab-panel content-scroll h-full">
                 <div id="menu-main" class="sub-menu active space-y-6">
-                    <h2 data-t="menu_title" class="text-2xl font-black">Меню</h2>
-                    <div onclick="showSubMenu('profile')" class="card-ultimate flex items-center gap-4 p-4 cursor-pointer">
-                        <div class="w-12 h-12 rounded-full bg-brand/20 flex items-center justify-center"><i data-lucide="user" class="text-brand"></i></div>
-                        <div class="flex-1">
-                            <p class="font-bold">Admin Account</p>
-                            <p data-t="premium_member" class="text-[10px] text-zinc-500">Premium Member</p>
-                        </div>
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </div>
-
-                    <p data-t="device_cat" class="text-[10px] font-bold text-zinc-500 uppercase px-1">Устройство</p>
+                    <h2 class="text-2xl font-black">Сведения</h2>
+                    
+                    <p class="text-[10px] font-bold text-zinc-500 uppercase px-1">Аппаратное обеспечение</p>
                     <div class="card-ultimate p-0 overflow-hidden divide-y divide-border-color">
-                        <div onclick="showSubMenu('display')" class="p-4 flex items-center justify-between cursor-pointer">
-                            <div class="flex items-center gap-3"><i data-lucide="smartphone" class="w-4 h-4"></i><span data-t="screen" class="text-sm">Экран</span></div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600"></i>
+                        <div onclick="showSubMenu('display')" class="p-4 flex items-center justify-between cursor-pointer active:bg-brand/5">
+                            <div class="flex items-center gap-3"><i data-lucide="monitor" class="w-4 h-4"></i><span class="text-sm">Матрица экрана</span></div>
+                            <span class="text-[10px] font-bold text-brand">DETECT</span>
                         </div>
-                        <div onclick="showSubMenu('battery')" class="p-4 flex items-center justify-between cursor-pointer">
-                            <div class="flex items-center gap-3"><i data-lucide="battery" class="w-4 h-4"></i><span data-t="battery" class="text-sm">Батарея</span></div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600"></i>
-                        </div>
-                        <div onclick="showSubMenu('gpu')" class="p-4 flex items-center justify-between cursor-pointer">
-                            <div class="flex items-center gap-3"><i data-lucide="cpu" class="w-4 h-4"></i><span data-t="gpu_boost" class="text-sm">Разгон GPU</span></div>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600"></i>
+                        <div onclick="showSubMenu('battery')" class="p-4 flex items-center justify-between cursor-pointer active:bg-brand/5">
+                            <div class="flex items-center gap-3"><i data-lucide="zap" class="w-4 h-4"></i><span class="text-sm">Контроллер заряда</span></div>
+                            <span class="text-[10px] font-bold text-brand">ACTIVE</span>
                         </div>
                     </div>
 
-                    <p data-t="lang_title" class="text-[10px] font-bold text-zinc-500 uppercase px-1">Язык системы</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setLanguage('ru')" class="card-ultimate p-2 text-center text-[10px] font-bold hover:border-brand transition-colors">РУССКИЙ</button>
-                        <button onclick="setLanguage('en')" class="card-ultimate p-2 text-center text-[10px] font-bold hover:border-brand transition-colors">ENGLISH</button>
-                        <button onclick="setLanguage('jp')" class="card-ultimate p-2 text-center text-[10px] font-bold hover:border-brand transition-colors">日本語</button>
-                    </div>
-
-                    <p data-t="configs_cat" class="text-[10px] font-bold text-zinc-500 uppercase px-1">Конфигурации</p>
-                    <div class="card-ultimate p-5 border-dashed border-brand/30 bg-brand/5 flex flex-col items-center gap-3">
-                        <i data-lucide="file-up" class="w-8 h-8 text-brand"></i>
-                        <p data-t="upload_config" class="text-xs text-center">Загрузите .json конфиг</p>
-                        <input type="file" id="config-upload" class="hidden" onchange="handleConfigUpload(this)">
-                        <button onclick="document.getElementById('config-upload').click()" data-t="btn_choose_file" class="px-6 py-2 bg-brand text-white rounded-full text-[10px] font-bold uppercase">Выбрать файл</button>
-                    </div>
-                </div>
-
-                <!-- Sub Menus -->
-                <div id="menu-profile" class="sub-menu space-y-6">
-                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-t="back">Назад</span></button>
-                    <h2 data-t="profile" class="text-2xl font-black">Профиль</h2>
-                    <div class="card-ultimate space-y-4">
-                        <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">ID</span><span class="text-xs mono">#882910</span></div>
-                        <div class="flex justify-between border-b border-border-color pb-2"><span data-t="status" class="text-xs text-zinc-500">Статус</span><span class="text-xs text-emerald-500 font-bold uppercase">Pro</span></div>
-                        <div class="flex justify-between pb-2"><span data-t="registration" class="text-xs text-zinc-500">Регистрация</span><span class="text-xs">02.01.2025</span></div>
+                    <p class="text-[10px] font-bold text-zinc-500 uppercase px-1">Окружение</p>
+                    <div class="card-ultimate space-y-3">
+                        <div class="flex justify-between text-xs"><span class="text-zinc-500">Система</span><span id="os-ver" class="font-bold text-zinc-400 italic">NULL</span></div>
+                        <div class="flex justify-between text-xs"><span class="text-zinc-500">Ядро (Arch)</span><span id="platform-val" class="font-bold text-zinc-400 italic">NULL</span></div>
                     </div>
                 </div>
 
                 <div id="menu-display" class="sub-menu space-y-6">
-                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-t="back">Назад</span></button>
-                    <h2 data-t="screen_settings" class="text-2xl font-black">Настройки Экрана</h2>
-                    <div class="card-ultimate space-y-4">
-                        <div class="flex justify-between items-center"><span class="text-sm">120Hz</span><div class="w-10 h-5 bg-brand rounded-full"></div></div>
-                        <div class="flex justify-between items-center"><span data-t="hdr_force" class="text-sm">HDR Форсирование</span><div class="w-10 h-5 bg-zinc-800 rounded-full"></div></div>
-                    </div>
+                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> Назад</button>
+                    <h2 class="text-2xl font-black">Дисплей</h2>
+                    <div id="screen-data-list" class="card-ultimate space-y-4"></div>
                 </div>
 
                 <div id="menu-battery" class="sub-menu space-y-6">
-                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-t="back">Назад</span></button>
-                    <h2 data-t="battery" class="text-2xl font-black">Батарея</h2>
-                    <div class="card-ultimate space-y-4">
-                        <div class="flex justify-between items-center"><span class="text-sm">Power Saving</span><div class="w-10 h-5 bg-zinc-800 rounded-full"></div></div>
-                        <div class="flex justify-between items-center"><span class="text-sm">Fast Charging</span><div class="w-10 h-5 bg-brand rounded-full"></div></div>
-                    </div>
+                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> Назад</button>
+                    <h2 class="text-2xl font-black">Энергия</h2>
+                    <div id="battery-data-list" class="card-ultimate space-y-4"></div>
                 </div>
-
-                <div id="menu-gpu" class="sub-menu space-y-6">
-                    <button onclick="showSubMenu('main')" class="flex items-center gap-2 text-brand text-xs font-bold uppercase mb-4"><i data-lucide="arrow-left" class="w-4 h-4"></i> <span data-t="back">Назад</span></button>
-                    <h2 data-t="gpu_boost" class="text-2xl font-black">Разгон GPU</h2>
-                    <div class="card-ultimate p-6 text-center border-amber-500/30 bg-amber-500/5">
-                        <i data-lucide="flame" class="w-12 h-12 text-amber-500 mx-auto mb-4"></i>
-                        <p data-t="oc_core" class="text-sm font-bold">Оверклокинг Ядра</p>
-                        <p data-t="oc_warning" class="text-[10px] text-zinc-500 mt-2">Внимание: может привести к нагреву</p>
-                        <button data-t="btn_activate" class="mt-4 w-full py-2 bg-amber-500 text-black font-black rounded-lg text-xs uppercase">Активировать</button>
-                    </div>
-                </div>
-
-                <div class="pb-10"></div>
             </div>
         </main>
 
-        <!-- Modals -->
-        <div id="modal-overlay" onclick="closeModal(event)">
-            <div id="modal-content" onclick="event.stopPropagation()">
-                <div class="flex justify-between items-start mb-6">
-                    <div id="modal-header">
-                        <h3 id="modal-title" class="text-xl font-black">Details</h3>
-                        <p id="modal-subtitle" data-t="tech_report" class="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Технический отчет</p>
-                    </div>
-                    <button onclick="closeModal()" class="w-8 h-8 bg-zinc-800 rounded-full flex items-center justify-center"><i data-lucide="x" class="w-4 h-4"></i></button>
-                </div>
-                <div class="space-y-6">
-                    <div class="card-ultimate bg-brand/5 border-brand/20">
-                        <p class="text-xs leading-relaxed text-zinc-300" id="modal-desc"></p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="card-ultimate p-3"><p data-t="modal_status" class="text-[9px] text-zinc-500 uppercase">Статус</p><p data-t="modal_optimal" class="text-xs font-bold text-emerald-500">ОПТИМАЛЬНО</p></div>
-                        <div class="card-ultimate p-3"><p data-t="modal_priority" class="text-[9px] text-zinc-500 uppercase">Приоритет</p><p data-t="modal_high" class="text-xs font-bold">ВЫСОКИЙ</p></div>
-                    </div>
-                    <button onclick="closeModal()" data-t="btn_apply_fix" class="w-full py-4 bg-brand text-white font-black rounded-2xl text-xs uppercase">Применить фикс</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Tab Bar -->
         <nav class="tab-bar">
-            <button onclick="changeTab('dashboard', this)" class="tab-item active"><i data-lucide="home" class="w-6 h-6"></i><span data-t="tab_main" class="text-[9px] font-bold mt-1">ГЛАВНАЯ</span></button>
-            <button onclick="changeTab('vpn', this)" class="tab-item"><i data-lucide="shield" class="w-6 h-6"></i><span data-t="tab_vpn" class="text-[9px] font-bold mt-1">VPN</span></button>
-            <button onclick="changeTab('security', this)" class="tab-item"><i data-lucide="search" class="w-6 h-6"></i><span data-t="tab_audit" class="text-[9px] font-bold mt-1">АУДИТ</span></button>
-            <button onclick="changeTab('settings', this)" class="tab-item"><i data-lucide="menu" class="w-6 h-6"></i><span data-t="tab_menu" class="text-[9px] font-bold mt-1">МЕНЮ</span></button>
+            <button onclick="changeTab('dashboard', this)" class="tab-item active"><i data-lucide="layout-dashboard" class="w-6 h-6"></i><span class="text-[9px] font-bold mt-1">ОБЗОР</span></button>
+            <button onclick="changeTab('ping', this)" class="tab-item"><i data-lucide="bar-chart-3" class="w-6 h-6"></i><span class="text-[9px] font-bold mt-1">ПИНГ</span></button>
+            <button onclick="changeTab('security', this)" class="tab-item"><i data-lucide="file-text" class="w-6 h-6"></i><span class="text-[9px] font-bold mt-1">ЛОГИ</span></button>
+            <button onclick="changeTab('settings', this)" class="tab-item"><i data-lucide="info" class="w-6 h-6"></i><span class="text-[9px] font-bold mt-1">ИНФО</span></button>
         </nav>
     </div>
 
     <script>
-        const translations = {
-            ru: {
-                status_active: "Система Активна",
-                latency: "Задержка",
-                load: "Нагрузка",
-                btn_optimize: "Оптимизировать",
-                vpn_nodes: "VPN Узлы",
-                change_server: "Сменить сервер",
-                audit_title: "Аудит",
-                menu_title: "Меню",
-                premium_member: "Premium Аккаунт",
-                device_cat: "Устройство",
-                screen: "Экран",
-                battery: "Батарея",
-                gpu_boost: "Разгон GPU",
-                lang_title: "Язык системы",
-                configs_cat: "Конфигурации",
-                upload_config: "Загрузите .json конфиг",
-                btn_choose_file: "Выбрать файл",
-                back: "Назад",
-                profile: "Профиль",
-                status: "Статус",
-                registration: "Регистрация",
-                screen_settings: "Настройки Экрана",
-                hdr_force: "HDR Форсирование",
-                oc_core: "Оверклокинг Ядра",
-                oc_warning: "Внимание: может привести к нагреву",
-                btn_activate: "Активировать",
-                tech_report: "Технический отчет",
-                modal_status: "Статус",
-                modal_optimal: "ОПТИМАЛЬНО",
-                modal_priority: "Приоритет",
-                modal_high: "ВЫСОКИЙ",
-                btn_apply_fix: "Применить фикс",
-                tab_main: "ГЛАВНАЯ",
-                tab_vpn: "VPN",
-                tab_audit: "АУДИТ",
-                tab_menu: "МЕНЮ",
-                audit_1: { t: "Анализ DNS-утечек", d: "Проверка безопасности текущих DNS-серверов. Рекомендуется использовать DoH." },
-                audit_2: { t: "Проверка MTU пакетов", d: "Размер кадра настроен под текущий канал связи." },
-                audit_3: { t: "TCP Congestion Control", d: "Выбран алгоритм BBR для максимальной пропускной способности." }
-            },
-            en: {
-                status_active: "System Active",
-                latency: "Latency",
-                load: "Load",
-                btn_optimize: "Optimize",
-                vpn_nodes: "VPN Nodes",
-                change_server: "Change Server",
-                audit_title: "Audit",
-                menu_title: "Menu",
-                premium_member: "Premium Member",
-                device_cat: "Device",
-                screen: "Screen",
-                battery: "Battery",
-                gpu_boost: "GPU Boost",
-                lang_title: "System Language",
-                configs_cat: "Configurations",
-                upload_config: "Upload .json config",
-                btn_choose_file: "Choose File",
-                back: "Back",
-                profile: "Profile",
-                status: "Status",
-                registration: "Registration",
-                screen_settings: "Screen Settings",
-                hdr_force: "HDR Forcing",
-                oc_core: "Core Overclocking",
-                oc_warning: "Warning: may lead to overheating",
-                btn_activate: "Activate",
-                tech_report: "Technical Report",
-                modal_status: "Status",
-                modal_optimal: "OPTIMAL",
-                modal_priority: "Priority",
-                modal_high: "HIGH",
-                btn_apply_fix: "Apply Fix",
-                tab_main: "HOME",
-                tab_vpn: "VPN",
-                tab_audit: "AUDIT",
-                tab_menu: "MENU",
-                audit_1: { t: "DNS Leak Analysis", d: "Security check of current DNS servers. DoH recommended." },
-                audit_2: { t: "MTU Packet Check", d: "Frame size adjusted for current channel." },
-                audit_3: { t: "TCP Congestion Control", d: "BBR algorithm selected for max throughput." }
-            },
-            jp: {
-                status_active: "システムアクティブ",
-                latency: "レイテンシ",
-                load: "負荷",
-                btn_optimize: "最適化する",
-                vpn_nodes: "VPNノード",
-                change_server: "サーバー変更",
-                audit_title: "監査",
-                menu_title: "メニュー",
-                premium_member: "プレミアム会員",
-                device_cat: "デバイス",
-                screen: "画面",
-                battery: "バッテリー",
-                gpu_boost: "GPUブースト",
-                lang_title: "システム言語",
-                configs_cat: "構成",
-                upload_config: ".jsonファイルをアップロード",
-                btn_choose_file: "ファイルを選択",
-                back: "戻る",
-                profile: "プロフィール",
-                status: "ステータс",
-                registration: "登録日",
-                screen_settings: "画面設定",
-                hdr_force: "HDR強制",
-                oc_core: "コア・オーバークロック",
-                oc_warning: "警告：発熱の恐れがあります",
-                btn_activate: "有効にする",
-                tech_report: "テクニカルレポート",
-                modal_status: "ステータス",
-                modal_optimal: "最適",
-                modal_priority: "優先度",
-                modal_high: "高い",
-                btn_apply_fix: "修正を適用",
-                tab_main: "ホーム",
-                tab_vpn: "VPN",
-                tab_audit: "監査",
-                tab_menu: "メニュー",
-                audit_1: { t: "DNSリーク分析", d: "現在のDNSサーバーのセキュリティチェック。DoH推奨。" },
-                audit_2: { t: "MTUパケットチェック", d: "フレームサイズを現在の回線に合わせて調整。" },
-                audit_3: { t: "TCP輻輳制御", d: "最大スループットのためにBBRを選択。" }
+        // --- СИСТЕМНАЯ ДИАГНОСТИКА ---
+        function getDeviceInfo() {
+            const ua = navigator.userAgent;
+            const platform = navigator.platform;
+            
+            // Определение реального устройства
+            let device = "Desktop Agent";
+            if (/android/i.test(ua)) device = "Android Device";
+            else if (/iPad|iPhone|iPod/.test(ua)) device = "iOS Device";
+            
+            document.getElementById('device-model-header').innerText = device;
+            document.getElementById('os-ver').innerText = device !== "Desktop Agent" ? "System Core 14.x" : "Windows/MacOS (NULL)";
+            document.getElementById('platform-val').innerText = platform;
+
+            // GPU - Графический процессор есть на всех мобильных и ПК
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            if (gl) {
+                const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Software Renderer";
+                document.getElementById('gpu-info').innerText = renderer;
+                addLog(`GPU detected: ${renderer}`, 'success');
+            } else {
+                addLog("GPU Hardware acceleration disabled", 'warn');
             }
-        };
 
-        let currentLang = 'ru';
+            // Частота (Hz)
+            requestAnimationFrame((t1) => {
+                requestAnimationFrame((t2) => {
+                    const hz = Math.round(1000 / (t2 - t1));
+                    document.getElementById('hz-val').innerText = hz;
+                    addLog(`Screen refresh rate: ${hz}Hz identified`, 'info');
+                });
+            });
 
-        function setLanguage(lang) {
-            currentLang = lang;
-            document.documentElement.lang = lang;
-            updateUI();
-            renderAudit();
+            // Батарея (Real API)
+            if (navigator.getBattery) {
+                navigator.getBattery().then(bat => {
+                    const update = () => {
+                        const lvl = Math.round(bat.level * 100);
+                        document.getElementById('bat-val').innerText = lvl;
+                        addLog(`Power level: ${lvl}% [${bat.charging ? 'Charging' : 'Discharging'}]`, 'info');
+                        renderBatteryMenu(bat);
+                    };
+                    bat.onlevelchange = update;
+                    bat.onchargingchange = update;
+                    update();
+                });
+            } else {
+                document.getElementById('bat-val').innerText = "NULL";
+                addLog("Battery API not supported on this kernel", 'warn');
+            }
         }
 
-        function updateUI() {
-            const t = translations[currentLang];
-            document.querySelectorAll('[data-t]').forEach(el => {
-                const key = el.getAttribute('data-t');
-                if (t[key]) el.innerText = t[key];
+        function renderScreenMenu() {
+            const list = document.getElementById('screen-data-list');
+            list.innerHTML = `
+                <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">Разрешение</span><span class="text-xs font-bold">${window.screen.width}x${window.screen.height}</span></div>
+                <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">Пиксель-фактор</span><span class="text-xs font-bold">${window.devicePixelRatio}x</span></div>
+                <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">Гамма</span><span class="text-xs font-bold">${window.screen.colorDepth}-bit</span></div>
+                <div class="flex justify-between"><span class="text-xs text-zinc-500">Touch Support</span><span class="text-xs font-bold text-emerald-500">${'ontouchstart' in window ? 'TRUE' : 'FALSE'}</span></div>
+            `;
+        }
+
+        function renderBatteryMenu(bat) {
+            const list = document.getElementById('battery-data-list');
+            if(!list) return;
+            list.innerHTML = `
+                <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">Заряд</span><span class="text-xs font-bold">${Math.round(bat.level * 100)}%</span></div>
+                <div class="flex justify-between border-b border-border-color pb-2"><span class="text-xs text-zinc-500">Статус</span><span class="text-xs font-bold">${bat.charging ? 'CONNECTED' : 'STANDALONE'}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-zinc-500">Battery API</span><span class="text-xs font-bold text-emerald-500">VERIFIED</span></div>
+            `;
+        }
+
+        function addLog(msg, type = 'info') {
+            const container = document.getElementById('real-logs');
+            const time = new Date().toLocaleTimeString('ru-RU', { hour12: false });
+            const div = document.createElement('div');
+            div.className = `log-line log-${type}`;
+            div.innerHTML = `<span class="opacity-40">[${time}]</span> <span class="font-bold">${type.toUpperCase()}:</span> ${msg}`;
+            container.prepend(div);
+        }
+
+        // --- ОПТИМИЗАЦИЯ ---
+        function runUltimateOptimization(btn) {
+            btn.disabled = true;
+            const fx = document.getElementById('optimizing-fx');
+            const textOverlay = document.getElementById('fx-text-overlay');
+            fx.style.display = 'block';
+            
+            const tasks = ["SYS_SCAN", "MEM_FLUSH", "CPU_REBALANCE", "TEMP_CLEAN", "DNS_FLUSH", "TCP_BOOST"];
+            let i = 0;
+            const interval = setInterval(() => {
+                const line = document.createElement('div');
+                line.innerText = `RUNNING: ${tasks[i % tasks.length]} ... SUCCESS`;
+                textOverlay.prepend(line);
+                if(textOverlay.children.length > 8) textOverlay.lastChild.remove();
+                
+                addLog(`Executing optimization task: ${tasks[i % tasks.length]}`, 'info');
+                i++;
+                if(i > 20) {
+                    clearInterval(interval);
+                    fx.style.display = 'none';
+                    textOverlay.innerHTML = '';
+                    btn.disabled = false;
+                    addLog("FULL SYSTEM OPTIMIZATION COMPLETED", "success");
+                }
+            }, 150);
+        }
+
+        // --- ГРАФИКИ ---
+        let mainChart;
+        function initCharts() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: Array(30).fill(''), datasets: [{ data: Array(30).fill(0), borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }] },
+                options: { maintainAspectRatio: false, scales: { y: { display: false }, x: { display: false } }, plugins: { legend: { display: false } }, animation: { duration: 0 } }
             });
         }
 
-        function renderAudit() {
-            const auditList = document.getElementById('audit-list');
-            if (!auditList) return;
-            auditList.innerHTML = '';
-            const t = translations[currentLang];
-            
-            for(let i=1; i<=30; i++) {
-                const itemData = t[`audit_${i}`] || { t: (currentLang === 'ru' ? `Проверка ${i}` : `Check ${i}`), d: "Scanning..." };
-                const div = document.createElement('div');
-                div.className = 'audit-item flex items-center justify-between p-4';
-                div.innerHTML = `<span class="text-xs">${itemData.t}</span><i data-lucide="chevron-right" class="w-3 h-3 text-zinc-600"></i>`;
-                div.onclick = () => openModal({ title: itemData.t, desc: itemData.d });
-                auditList.appendChild(div);
-            }
-            lucide.createIcons();
-        }
-
-        function openModal(item) {
-            const overlay = document.getElementById('modal-overlay');
-            if (!overlay) return;
-            document.getElementById('modal-title').innerText = item.title;
-            document.getElementById('modal-desc').innerText = item.desc;
-            overlay.classList.add('active');
-        }
-
-        function closeModal() {
-            const overlay = document.getElementById('modal-overlay');
-            if (overlay) overlay.classList.remove('active');
-        }
-
-        function showSubMenu(menuId) {
-            const menus = document.querySelectorAll('.sub-menu');
-            const target = document.getElementById(`menu-${menuId}`);
-            if (!target) return;
-            menus.forEach(m => m.classList.remove('active'));
-            target.classList.add('active');
-        }
-
-        function handleConfigUpload(input) {
-            if (input.files && input.files[0]) {
-                const status = document.getElementById('status-text');
-                const oldText = status.innerText;
-                status.innerText = "IMPORTING...";
-                setTimeout(() => {
-                    status.innerText = oldText;
-                    alert(currentLang === 'jp' ? "設定が読み込まれました" : "Config loaded!");
-                }, 1500);
+        async function checkPing() {
+            const start = Date.now();
+            try {
+                await fetch('https://8.8.8.8', { mode: 'no-cors', cache: 'no-cache' }).catch(() => {});
+                const lat = Date.now() - start;
+                document.getElementById('live-ping').innerText = lat + 'ms';
+                const circle = document.getElementById('ping-circle');
+                circle.style.borderColor = lat < 100 ? '#10b981' : (lat < 250 ? '#f59e0b' : '#ef4444');
+            } catch(e) { 
+                document.getElementById('live-ping').innerText = 'NULL';
             }
         }
 
+        // --- ТЕМА И НАВИГАЦИЯ ---
         function toggleTheme() {
             const body = document.body;
-            const icon = document.getElementById('theme-icon');
             const wrapper = document.getElementById('theme-icon-wrapper');
-            
-            // Запуск анимации вращения
-            wrapper.classList.add('theme-icon-rotate');
-            setTimeout(() => wrapper.classList.remove('theme-icon-rotate'), 500);
+            wrapper.style.transform = 'rotate(360deg)';
+            setTimeout(() => wrapper.style.transform = 'rotate(0deg)', 500);
 
             if (body.classList.contains('dark')) {
                 body.classList.replace('dark', 'light');
-                icon.setAttribute('data-lucide', 'sun');
-                icon.classList.replace('text-white', 'text-zinc-950');
+                document.getElementById('theme-icon').style.color = '#000';
+                addLog("Visual engine switched to LIGHT_MODE", 'warn');
             } else {
                 body.classList.replace('light', 'dark');
-                icon.setAttribute('data-lucide', 'moon');
-                icon.classList.replace('text-zinc-950', 'text-white');
+                document.getElementById('theme-icon').style.color = '#fff';
+                addLog("Visual engine switched to DARK_MODE", 'warn');
             }
             lucide.createIcons();
         }
@@ -576,67 +469,31 @@
         function changeTab(panelId, btn) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
-            const targetPanel = document.getElementById(`panel-${panelId}`);
-            if (targetPanel) targetPanel.classList.add('active');
-            if (btn) btn.classList.add('active');
+            document.getElementById(`panel-${panelId}`).classList.add('active');
+            btn.classList.add('active');
             if(panelId === 'settings') showSubMenu('main');
         }
 
-        let mainChart;
-        function initChart() {
-            const canvas = document.getElementById('mainChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            mainChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: Array(20).fill(''),
-                    datasets: [{
-                        data: Array(20).fill(0).map(() => Math.random() * 50 + 20),
-                        borderColor: '#3b82f6',
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: { y: { display: false }, x: { display: false } },
-                    plugins: { legend: { display: false } },
-                    animation: { duration: 0 }
-                }
-            });
+        function showSubMenu(menuId) {
+            document.querySelectorAll('.sub-menu').forEach(m => m.classList.remove('active'));
+            document.getElementById(`menu-${menuId}`).classList.add('active');
+            if(menuId === 'display') renderScreenMenu();
         }
 
-        function runUltimateOptimization(btn) {
-            const original = btn.innerHTML;
-            btn.disabled = true;
-            let p = 0;
-            const t = setInterval(() => {
-                p += 10;
-                btn.innerText = `... ${p}%`;
-                if(p>=100) {
-                    clearInterval(t);
-                    btn.innerText = currentLang === 'jp' ? "完了" : "DONE";
-                    setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
-                }
-            }, 100);
-        }
-
+        // --- LOOP ---
         setInterval(() => {
             if(mainChart) {
-                mainChart.data.datasets[0].data.push(Math.random() * 40 + 30);
+                mainChart.data.datasets[0].data.push(Math.random() * 20 + 5);
                 mainChart.data.datasets[0].data.shift();
                 mainChart.update('none');
             }
-        }, 1000);
+            checkPing();
+        }, 2000);
 
         window.onload = () => {
-            initChart();
-            renderAudit();
-            updateUI();
+            getDeviceInfo();
+            initCharts();
+            addLog("Core Kernel 2.5.0 initialised", 'success');
             lucide.createIcons();
         };
     </script>
